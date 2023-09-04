@@ -1,0 +1,6 @@
+python==3.8.13
+icalendar==5.0.7
+numpy==1.21.5
+openpyxl==3.0.10
+pandas==1.5.2
+pytz==2022.7
