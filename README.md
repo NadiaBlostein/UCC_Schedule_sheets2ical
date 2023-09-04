@@ -21,7 +21,7 @@ When you click on the output `ics` file, make sure to load it into its own new C
 
 # Pending features
 * going beyond week 9 (bugs here – probably related to a typo)
-* ability to specify the week (i.e. worksheet) of interest from command line
+* ability to specify the week (i.e. worksheet) and spreadsheet of interest from command line
 * parse location
 * add module name to first line of event title
 * ability to overwrite previously generated events (as opposed to writing an updated duplicate)

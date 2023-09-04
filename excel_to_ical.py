@@ -1,27 +1,16 @@
-#!/usr/bin/env python
-# coding: utf-8
+'''
+Quick script that allows user to download UCC graduate entry medicine (GEM) schedule into excel spreadsheet to convert it into icalendar event (instead of needing to do this manually).
+Relevant documentation:
+    * https://icalendar.readthedocs.io/en/latest/usage.html
+    * https://learnpython.com/blog/working-with-icalendar-with-python/
+'''
 
-# ## Documentation
-# 
-# * [iCalendar Python package](https://icalendar.readthedocs.io/en/latest/usage.html)
-# * https://learnpython.com/blog/working-with-icalendar-with-python/
-
-# In[12]:
-
-
-# =========== Imports
-from icalendar import Calendar, Event, vCalAddress, vText
+from icalendar import Calendar, Event
 from datetime import datetime
-from pathlib import Path
-import os
-import pytz
 import pandas as pd
 import openpyxl
-import numpy as np
 
-
-# In[13]:
-
+excel_file_name = 'GEM1 Semester 1 2023 2024.xlsx'
 
 # Initiate the calendar
 cal = Calendar()
@@ -30,12 +19,7 @@ cal = Calendar()
 cal.add('prodid', '-//My calendar product//example.com//')
 cal.add('version', '2.0')
 
-excel_file_name = 'GEM1 Semester 1 2023 2024.xlsx'
-
-
-# In[14]:
-
-
+# Function that creates dictionary out of specific worksheet
 def get_ical(excel_file_name, worksheet):
 
     # Read dataframe
@@ -70,27 +54,9 @@ def get_ical(excel_file_name, worksheet):
                 events.append(event)
     return(events)
 
-
-# In[15]:
-
-
 sheet_list = openpyxl.load_workbook(excel_file_name).sheetnames
-# for worksheet in sheet_list:
-#     event_dict = get_ical(excel_file_name, worksheet)
-#     # Add subcomponents
-#     for course in event_dict:
-#         event = Event()
-#         event.add('summary', course['summary'])
-#         event.add('dtstart', course['dtstart'])
-#         event.add('dtend', course['dtend'])
-#         #event.add('location', course['Location'])
-#         cal.add_component(event)
 
-
-# In[16]:
-
-
-for i in range(5):
+for i in range(5): # for worksheet in sheet_list:
     event_dict = get_ical(excel_file_name, worksheet = sheet_list[i])
     # Add subcomponents
     for course in event_dict:
@@ -101,23 +67,6 @@ for i in range(5):
         #event.add('location', course['Location'])
         cal.add_component(event)
 
-
-# In[17]:
-
-
-f = open('example.ics', 'wb')
+f = open('GEM1_Semester_1_2023_2024.ics', 'wb')
 f.write(cal.to_ical())
 f.close()
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
