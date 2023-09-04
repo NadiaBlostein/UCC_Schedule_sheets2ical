@@ -1,6 +1,6 @@
 # Prerequisites
 ```
-Python 3.8.3
+Python 3.8.13
 pip
 ```
 
