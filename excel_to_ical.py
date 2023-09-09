@@ -40,7 +40,7 @@ def get_ical(excel_file_name, worksheet):
                         
                         # Separate location
                         filtered_value_list = [word for word in value_list if 'BHSC_' not in word]
-                        location = [word for word in value_list if 'BHSC_' in word]
+                        location = [word for word in value_list if 'BHSC' in word]
                         output_value = ' '.join(filtered_value_list)
                         
                         event['summary'] = output_value
@@ -67,7 +67,9 @@ cal.add('version', '2.0')
 
 # =========== Initiate module-specific calendars
 module_cal = {}
-for module in ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM1010', 'GM1020']:
+module_list = ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM1010', 'GM1020', 'Misc']
+module_list_short = ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM1010', 'GM1020']
+for module in module_list:
     tmp_cal = Calendar()
     tmp_cal.add('prodid', '-//My calendar product//example.com//')
     tmp_cal.add('version', '2.0')
@@ -85,7 +87,16 @@ for i in range(14):
         if course.get('location') is not None:
             event.add('location', course['location'])
         cal.add_component(event)
-    for module in ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM1010', 'GM1020']:
+        if not any(item in course['summary'] for item in module_list_short):
+            event = Event()
+            event.add('summary', course['summary'])
+            event.add('dtstart', course['dtstart'])
+            event.add('dtend', course['dtend'])
+            if course.get('location') is not None:
+                event.add('location', course['location'])
+            module_cal['Misc'].add_component(event)
+
+    for module in module_list_short:
         for course in event_dict:
             if module in course['summary']:
                 event = Event()
@@ -94,14 +105,13 @@ for i in range(14):
                 event.add('dtend', course['dtend'])
                 if course.get('location') is not None:
                     event.add('location', course['location'])
-                
                 module_cal[module].add_component(event)
 
 # =========== Write icalendar files
 f = open(file_name + '.ics', 'wb')
 f.write(cal.to_ical())
 f.close()
-for module in ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM1010', 'GM1020']:
+for module in module_list:
     f = open(module + '.ics', 'wb')
     f.write(module_cal[module].to_ical())
     f.close()
