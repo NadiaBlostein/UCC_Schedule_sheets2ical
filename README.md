@@ -10,7 +10,7 @@
 * `pip 22.3.1`
 
 ### What to do
-1. Download UCC course schedule as Excel file (`GEM1 Semester 1 2023 2024.xlsx`) and move it to local directory.
+1. Download your UCC course schedule as Excel file, rename it `timetable.xlsx` and move it to working (i.e. "current") directory.
 2. Run the following commands from your terminal
 ```
 pip install -r requirements.txt

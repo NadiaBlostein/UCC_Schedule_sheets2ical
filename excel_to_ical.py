@@ -55,7 +55,7 @@ def get_ical(excel_file_name, worksheet):
     return(events)
 
 # =========== File name and sheet list
-file_name = 'GEM1 Semester 1 2023 2024'
+file_name = 'timetable'
 excel_file_name = file_name + '.xlsx'
 sheet_list = openpyxl.load_workbook(excel_file_name).sheetnames
 
