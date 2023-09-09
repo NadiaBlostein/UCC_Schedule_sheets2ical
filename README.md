@@ -1,12 +1,13 @@
-# What and why?
-Quick script that allows user to download UCC graduate entry medicine (GEM) schedule into excel spreadsheet to convert it into icalendar event (instead of needing to do this manually).
+# What 
+* Quick script that allows user to download UCC graduate entry medicine (GEM) schedule into excel spreadsheet to convert it into icalendar event (instead of doing this manually).
+* `GEM1_Semester_1_2023-2024_calendars` contains icalendar versions of every GEM1 Fall 2023 module, as well as a calendar containing our entire schedule.
+* You may want to run the script used to automatically convert excel schedule to ical yourself (e.g. you are using a different Excel spreadsheet becuase you come from a different year, want a more up-to-date schedule, etc). Below is an explanation of how to do this.
 
 # How?
 ### Prerequisites
-```
-Python 3.8.13
-pip
-```
+* Familiarity with command-line and basic Python / pip wheel
+* `Python 3.8.13`
+* `pip 22.3.1`
 
 ### What to do
 1. Download UCC course schedule as Excel file (`GEM1 Semester 1 2023 2024.xlsx`) and move it to local directory.
@@ -20,8 +21,5 @@ python excel_to_ical.py
 When you click on the output `ics` file, make sure to load it into its own new Calendar (when you update it, it will generate every event from scratch so you will want to delete the previous version).
 
 # Pending features
-* going beyond week 9 (bugs here – probably related to a typo)
 * ability to specify the week (i.e. worksheet) and spreadsheet of interest from command line
-* parse location
-* add module name to first line of event title
-* ability to overwrite previously generated events (as opposed to writing an updated duplicate)
+* real-time updates
