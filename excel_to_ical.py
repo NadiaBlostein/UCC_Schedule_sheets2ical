@@ -1,11 +1,7 @@
-from icalendar import Calendar, Event, vCalAddress, vText
+from icalendar import Calendar, Event
 from datetime import datetime
-from pathlib import Path
-import os
-import pytz
 import pandas as pd
 import openpyxl
-import numpy as np
 
 # =========== Get dictionary with all of the events
 def get_ical(excel_file_name, worksheet):
@@ -35,10 +31,11 @@ def get_ical(excel_file_name, worksheet):
                         # Parse strings to make it cleaner
                         value = value.replace('BHSC ','BHSC_')
                         value = value.replace('GM1001','')
-                        value = value.replace('PHARMACOLOGY','Pharmacology')
-                        value = value.replace('BIOCHEMISTRY','Biochemistry')
                         value = value.replace('ANATOMY','Anatomy')
-                        value = value.replace('PATHOLOGY /MEDMICRO','Pathology/Micro')
+                        value = value.replace('BIOCHEMISTRY','Biochemistry')
+                        value = value.replace('PATHOLOGY /MEDMICRO','Pathology')
+                        value = value.replace('PHARMACOLOGY','Pharmacology')
+                        value = value.replace('PHYSIOLOGY','Physiology')
                         value_list = value.split()
                         
                         # Separate location
@@ -62,12 +59,19 @@ file_name = 'GEM1 Semester 1 2023 2024'
 excel_file_name = file_name + '.xlsx'
 sheet_list = openpyxl.load_workbook(excel_file_name).sheetnames
 
-# =========== Initiate the calendar
+# =========== Initiate main calendar
 cal = Calendar()
-
 # =========== Some properties are required to be compliant
 cal.add('prodid', '-//My calendar product//example.com//')
 cal.add('version', '2.0')
+
+# =========== Initiate module-specific calendars
+module_cal = {}
+for module in ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM1010', 'GM1020']:
+    tmp_cal = Calendar()
+    tmp_cal.add('prodid', '-//My calendar product//example.com//')
+    tmp_cal.add('version', '2.0')
+    module_cal[module] = tmp_cal
 
 # =========== Populate calendar with events!
 for i in range(14):
@@ -81,8 +85,23 @@ for i in range(14):
         if course.get('location') is not None:
             event.add('location', course['location'])
         cal.add_component(event)
+    for module in ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM1010', 'GM1020']:
+        for course in event_dict:
+            if module in course['summary']:
+                event = Event()
+                event.add('summary', course['summary'])
+                event.add('dtstart', course['dtstart'])
+                event.add('dtend', course['dtend'])
+                if course.get('location') is not None:
+                    event.add('location', course['location'])
+                
+                module_cal[module].add_component(event)
 
-# =========== Write icalendar file
+# =========== Write icalendar files
 f = open(file_name + '.ics', 'wb')
 f.write(cal.to_ical())
 f.close()
+for module in ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM1010', 'GM1020']:
+    f = open(module + '.ics', 'wb')
+    f.write(module_cal[module].to_ical())
+    f.close()
