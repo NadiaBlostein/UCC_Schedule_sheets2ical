@@ -18,7 +18,10 @@ python excel_to_ical.py
 ```
 
 ### Caution
-When you click on the output `ics` file, make sure to load it into its own new Calendar (when you update it, it will generate every event from scratch so you will want to delete the previous version).
+* When you click on the output `ics` file, make sure to load it into its own new Calendar (when you update it, it will generate every event from scratch so you will want to delete the previous version).
+* Make sure to double check every week that it is still correct, as I am not updating these periodically.
+* Some sessions that are over 1-hour long will only show up as being 1-hour long.
+* Currently, it does not classify the SGLs / pods correctly.
 
 # Pending features
 * ability to specify the week (i.e. worksheet) and spreadsheet of interest from command line
