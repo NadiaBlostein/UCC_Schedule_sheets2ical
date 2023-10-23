@@ -2,6 +2,7 @@ from icalendar import Calendar, Event
 from datetime import datetime
 import pandas as pd
 import openpyxl
+import pytz
 
 # =========== Get dictionary with all of the events
 def get_ical(excel_file_name, worksheet):
@@ -29,8 +30,9 @@ def get_ical(excel_file_name, worksheet):
                         event = {}
                         
                         # Parse strings to make it cleaner
-                        value = value.replace('BHSC ','BHSC_')
+                        value = value.replace('BHSC ','BHSC-')
                         value = value.replace('GM1001','')
+                        value = value.replace('GM 1010','GM1010')
                         value = value.replace('ANATOMY','Anatomy')
                         value = value.replace('BIOCHEMISTRY','Biochemistry')
                         value = value.replace('PATHOLOGY /MEDMICRO','Pathology')
@@ -44,12 +46,17 @@ def get_ical(excel_file_name, worksheet):
                         output_value = ' '.join(filtered_value_list)
                         
                         event['summary'] = output_value
-                        dtstart = f"{date.year}-{date.month}-{date.day} {df.index.tolist()[i].split('-')[0].rstrip()}"
-                        dtstart = datetime.strptime(dtstart, "%Y-%m-%d %H:%M")
+
+                        dtstart = datetime(date.year, date.month, date.day,
+                            int(df.index.tolist()[i].split('-')[0].rstrip().split(':')[0]),0,0,
+                            tzinfo=pytz.timezone("Europe/Vienna"))
                         event['dtstart'] = dtstart
-                        dtend = f"{date.year}-{date.month}-{date.day} {df.index.tolist()[i].split('-')[1].rstrip()}"
-                        dtend = datetime.strptime(dtend, "%Y-%m-%d %H:%M")
+                        
+                        dtend = datetime(date.year, date.month, date.day,
+                            int(df.index.tolist()[i].split('-')[1].rstrip().split(':')[0]),0,0,
+                            tzinfo=pytz.timezone("Europe/Vienna"))
                         event['dtend'] = dtend
+                        
                         if len(location) == 1: event['location'] = location[0]
                         events.append(event)
     return(events)
