@@ -49,12 +49,12 @@ def get_ical(excel_file_name, worksheet):
 
                         dtstart = datetime(date.year, date.month, date.day,
                             int(df.index.tolist()[i].split('-')[0].rstrip().split(':')[0]),0,0,
-                            tzinfo=pytz.timezone("Europe/Vienna"))
+                            tzinfo=pytz.timezone("GMT"))
                         event['dtstart'] = dtstart
                         
                         dtend = datetime(date.year, date.month, date.day,
                             int(df.index.tolist()[i].split('-')[1].rstrip().split(':')[0]),0,0,
-                            tzinfo=pytz.timezone("Europe/Vienna"))
+                            tzinfo=pytz.timezone("GMT"))
                         event['dtend'] = dtend
                         
                         if len(location) == 1: event['location'] = location[0]
@@ -62,7 +62,7 @@ def get_ical(excel_file_name, worksheet):
     return(events)
 
 # =========== File name and sheet list
-file_name = 'timetable'
+file_name = 'GEM_1_Term_1'
 excel_file_name = file_name + '.xlsx'
 sheet_list = openpyxl.load_workbook(excel_file_name).sheetnames
 
