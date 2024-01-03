@@ -12,61 +12,63 @@ def get_ical(excel_file_name, worksheet):
     except FileNotFoundError:
         print(f"Worksheet '{worksheet}' not found in the Excel file {excel_file_name}.")
         exit(1)
-    df.fillna(method="ffill",inplace=True) # ATTENTION
-    df = df.iloc[:, :6].reset_index(drop=True)
-    df = df.reset_index(drop=True)
-    df = df[2:].reset_index(drop=True)
-    df.columns = df.iloc[0]
-    df = df.drop(0).reset_index(drop=True)
-    df.set_index(df.columns[0], inplace=True)
-    
+    df = pd.read_excel(excel_file_name, sheet_name = worksheet)
+    df.columns = df.iloc[1,:]
+    df = df[1:].reset_index(drop=True)
+    df.set_index(df.iloc[:,0], inplace=True)
+
     # Dictionary with all the relevant information
     events = []
+    idx_list = df.index.tolist()
+    #print(idx_list)
     for column_name, column_data in df.items():
-        date = column_name
-        if isinstance(date, datetime):
-            
-            for i, value in enumerate(column_data):
-                if value != 0 and isinstance(value,str):
-                    
-                    if 'lunch' not in value.lower():
-                        event = {}
+        if str(column_name) != 'NaT':
+            #print(column_name)
+            date = column_name
+            if isinstance(date, datetime):
+                
+                for i, value in enumerate(column_data):
+                    if value != 0 and isinstance(value,str):
                         
-                        # Parse strings to make it cleaner
-                        value = value.replace('BHSC ','BHSC-')
-                        value = value.replace('GM 1002','')
-                        value = value.replace('GM1002','')
-                        value = value.replace('M1002','')
-                        value = value.replace('GM 1010','GM1010')
-                        value = value.replace('GM 1020','GM1020')
-                        value = value.replace('ANATOMY','Anatomy')
-                        value = value.replace('PATHOLOGY /MEDMICRO','Pathology')
-                        value = value.replace('PATHOLOGGY','Pathology')
-                        value = value.replace('PHARMACOLOGY','Pharmacology')
-                        value = value.replace('PHYSIOLOGY','Physiology')
-                        value_list = value.split()
-                        
-                        # Separate location
-                        filtered_value_list = [word for word in value_list if 'BHSC_' not in word]
-                        location = [word for word in value_list if 'BHSC' in word]
-                        output_value = ' '.join(filtered_value_list)
-                        
-                        event['summary'] = output_value
+                        if 'lunch' not in value.lower():
+                            event = {}
+                            
+                            # Parse strings to make it cleaner
+                            value = value.replace('BHSC ','BHSC-')
+                            value = value.replace('GM 1002','')
+                            value = value.replace('GM1002','')
+                            value = value.replace('M1002','')
+                            value = value.replace('GM 1010','GM1010')
+                            value = value.replace('GM 1020','GM1020')
+                            value = value.replace('ANATOMY','Anatomy')
+                            value = value.replace('PATHOLOGY /MEDMICRO','Pathology')
+                            value = value.replace('PATHOLOGGY','Pathology')
+                            value = value.replace('PHARMACOLOGY','Pharmacology')
+                            value = value.replace('PHYSIOLOGY','Physiology')
+                            value_list = value.split()
+                            
+                            # Separate location
+                            filtered_value_list = [word for word in value_list if 'BHSC_' not in word]
+                            location = [word for word in value_list if 'BHSC' in word]
+                            output_value = ' '.join(filtered_value_list)
+                            
+                            event['summary'] = output_value
 
-                        aa = df.index.tolist()[i]
-                        aa.replace('.',":")
-                        dtstart = datetime(date.year, date.month, date.day,
-                            int(aa.split('-')[0].rstrip().split(':')[0]),0,0,
-                            tzinfo=pytz.timezone("GMT"))
-                        event['dtstart'] = dtstart
-                        
-                        dtend = datetime(date.year, date.month, date.day,
-                            int(aa.split('-')[1].rstrip().split(':')[0]),0,0,
-                            tzinfo=pytz.timezone("GMT"))
-                        event['dtend'] = dtend
+                            aa = idx_list[i]
+                            if aa != 'nan' or aa != '':
+                                aa = aa.replace('.',':')
+                                dtstart = datetime(date.year, date.month, date.day,
+                                    int(aa.split('-')[0].rstrip().split(':')[0]),0,0,
+                                    tzinfo=pytz.timezone("GMT"))
+                                event['dtstart'] = dtstart
+                            
+                                dtend = datetime(date.year, date.month, date.day,
+                                    int(aa.split('-')[1].rstrip().split(':')[0]),0,0,
+                                    tzinfo=pytz.timezone("GMT"))
+                                event['dtend'] = dtend
 
-                        if len(location) == 1: event['location'] = location[0]
-                        events.append(event)
+                            if len(location) == 1: event['location'] = location[0]
+                            events.append(event)
     return(events)
 
 # =========== File name and sheet list
@@ -91,38 +93,41 @@ for module in module_list:
     module_cal[module] = tmp_cal
 
 # =========== Populate calendar with events!
-for i in range(2):
-    event_dict = get_ical(excel_file_name, worksheet = sheet_list[i])
+# print(sheet_list)
+for i in range(len(sheet_list)):
+    if sheet_list[i] != 'Sheet3':
+        # print(f'Current sheet {sheet_list[i]}')
+        event_dict = get_ical(excel_file_name, worksheet = sheet_list[i])
 
-    for course in event_dict:
-        event = Event()
-        event.add('summary', course['summary'])
-        event.add('dtstart', course['dtstart'])
-        event.add('dtend', course['dtend'])
-        if course.get('location') is not None:
-            event.add('location', course['location'])
-        cal.add_component(event)
-        if not any(item in course['summary'] for item in module_list_short):
+        for course in event_dict:
             event = Event()
             event.add('summary', course['summary'])
             event.add('dtstart', course['dtstart'])
             event.add('dtend', course['dtend'])
             if course.get('location') is not None:
                 event.add('location', course['location'])
-            module_cal['Misc'].add_component(event)
-            module_cal['GEM_1_Term_2'].add_component(event)
-
-    for module in module_list_short:
-        for course in event_dict:
-            if module in course['summary']:
+            cal.add_component(event)
+            if not any(item in course['summary'] for item in module_list_short):
                 event = Event()
                 event.add('summary', course['summary'])
                 event.add('dtstart', course['dtstart'])
                 event.add('dtend', course['dtend'])
                 if course.get('location') is not None:
                     event.add('location', course['location'])
-                module_cal[module].add_component(event)
+                module_cal['Misc'].add_component(event)
                 module_cal['GEM_1_Term_2'].add_component(event)
+
+        for module in module_list_short:
+            for course in event_dict:
+                if module in course['summary']:
+                    event = Event()
+                    event.add('summary', course['summary'])
+                    event.add('dtstart', course['dtstart'])
+                    event.add('dtend', course['dtend'])
+                    if course.get('location') is not None:
+                        event.add('location', course['location'])
+                    module_cal[module].add_component(event)
+                    module_cal['GEM_1_Term_2'].add_component(event)
 
 # =========== Write icalendar files
 f = open(file_name + '.ics', 'wb')
