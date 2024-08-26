@@ -3,6 +3,7 @@ from datetime import datetime
 import pandas as pd
 import openpyxl
 import pytz
+import os
 
 # =========== Get dictionary with all of the events
 def get_ical(excel_file_name, worksheet):
@@ -29,34 +30,32 @@ def get_ical(excel_file_name, worksheet):
                     if 'lunch' not in value.lower():
                         event = {}
                         
+                        # daylight savings reversed March 31st
+                        tzone = "Europe/Dublin" #"Europe/Paris" if date.month > 3 else "GMT"
+
                         # Parse strings to make it cleaner
-                        value = value.replace(['BHSC_', 'BHSC '],'BHSC-')
-                        value = value.replace(['WGB__','WGB_', 'WGB '],'WGB-')
+                        value = value.title()
+                        for werd in ['Bhsc_', 'Bhsc ']: value = value.replace(werd,'BHSC-')
+                        for werd in ['Wgb__','Wbg_', 'Wbg ']: value = value.replace(werd,'WGB-')
+                        value = value.replace('GM2001 Flame Lab Session','Anatomy\nFlame Lab Session')
                         value = value.replace('GM2001','')
-                        # value = value.replace('GM 1010','GM1010')
-                        value = value.replace(['ANATOMY', 'Flame Lab Session'],'Anatomy\nFlame Lab Session')
-                        value = value.replace('BIOCHEMISTRY','Biochemistry')
-                        value = value.replace('Special Studies modules','Special Studies Modules')
-                        value = value.replace('PATHOLOGY','Pathology')
-                        value = value.replace('PHARMACOLOGY','Pharmacology')
-                        value = value.replace('PHYSIOLOGY','Physiology')
                         value_list = value.split()
                         
                         # Separate location
-                        filtered_value_list = [word for word in value_list if 'BHSC_' not in word]
-                        location = [word for word in value_list if 'BHSC' in word]
+                        filtered_value_list = [word for word in value_list if 'BHSC-' not in word and 'WGB-' not in word]
+                        location = [word for word in value_list if 'BHSC' in word or 'WGB' in word]
                         output_value = ' '.join(filtered_value_list)
                         
                         event['summary'] = output_value
 
                         dtstart = datetime(date.year, date.month, date.day,
                             int(df.index.tolist()[i].split('-')[0].rstrip().split(':')[0]),0,0,
-                            tzinfo=pytz.timezone("GMT"))
+                            tzinfo=pytz.timezone(tzone))
                         event['dtstart'] = dtstart
                         
                         dtend = datetime(date.year, date.month, date.day,
                             int(df.index.tolist()[i].split('-')[1].rstrip().split(':')[0]),0,0,
-                            tzinfo=pytz.timezone("GMT"))
+                            tzinfo=pytz.timezone(tzone))
                         event['dtend'] = dtend
                         
                         if len(location) == 1: event['location'] = location[0]
@@ -64,20 +63,21 @@ def get_ical(excel_file_name, worksheet):
     return(events)
 
 # =========== File name and sheet list
-file_name = 'GEM_1_Term_1'
+file_name = 'GEM_2_Term_1'
 excel_file_name = file_name + '.xlsx'
 sheet_list = openpyxl.load_workbook(excel_file_name).sheetnames
 
 # =========== Initiate main calendar
 cal = Calendar()
+
 # =========== Some properties are required to be compliant
 cal.add('prodid', '-//My calendar product//example.com//')
 cal.add('version', '2.0')
 
 # =========== Initiate module-specific calendars
 module_cal = {}
-module_list = ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM2006', 'GM2013', 'GM2020','Special Studies Modules','Misc']
-module_list_short = ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM2006', 'GM2013', 'GM2020','Special Studies Modules']
+module_list = ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM2006', 'GM2013', 'GM2020','GM2030','Special Studies Modules','Misc']
+module_list_short = ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM2006', 'GM2013', 'GM2020','GM2030','Special Studies Modules']
 for module in module_list:
     tmp_cal = Calendar()
     tmp_cal.add('prodid', '-//My calendar product//example.com//')
@@ -85,7 +85,7 @@ for module in module_list:
     module_cal[module] = tmp_cal
 
 # =========== Populate calendar with events!
-for i in range(14):
+for i in range(1, 14):
     event_dict = get_ical(excel_file_name, worksheet = sheet_list[i])
 
     for course in event_dict:
@@ -117,10 +117,11 @@ for i in range(14):
                 module_cal[module].add_component(event)
 
 # =========== Write icalendar files
-f = open(file_name + '.ics', 'wb')
+if not os.path.exists(file_name): os.makedirs(file_name)
+f = open(file_name + '/' + file_name + '.ics', 'wb')
 f.write(cal.to_ical())
 f.close()
 for module in module_list:
-    f = open(module + '.ics', 'wb')
+    f = open(file_name + '/' + module + '.ics', 'wb')
     f.write(module_cal[module].to_ical())
     f.close()
