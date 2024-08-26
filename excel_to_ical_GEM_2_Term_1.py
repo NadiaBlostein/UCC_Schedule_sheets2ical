@@ -35,12 +35,13 @@ def get_ical(excel_file_name, worksheet):
                         tzone = "Europe/Dublin" #"Europe/Paris" if date.month > 3 else "GMT"
 
                         # Parse strings to make it cleaner
-                        for module in ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'Special Studies Modules']:
+                        for module in ['Lecture','Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'Special Studies Modules', 'Hospital Experience']:
                             value = value.replace(module.upper(),module)
-                        for werd in ['Bhsc_', 'Bhsc ']: value = value.replace(werd,'BHSC-')
-                        for werd in ['Wgb__','Wbg_', 'Wbg ']: value = value.replace(werd,'WGB-')
-                        value = value.replace('Gm2001 Flame Lab Session','Anatomy\nFlame Lab Session')
-                        value = value.replace('Gm2001','')
+                        for werd in ['BHSC_', 'BHSC ']: value = value.replace(werd,'BHSC-')
+                        for werd in ['WGB__','WGB_', 'WGB ']: value = value.replace(werd,'WGB-')
+                        value = value.replace('GM2001 Flame Lab Session','Anatomy\nFlame Lab Session')
+                        value = value.replace('GM2001','')
+                        value = value.replace('Special Studies modules','Special Studies Modules')
                         value_list = value.split()
                         
                         # Separate location
@@ -80,8 +81,8 @@ cal.add('version', '2.0')
 
 # =========== Initiate module-specific calendars
 module_cal = {}
-module_list = ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM2006', 'GM2013', 'GM2020','GM2030','Special Studies Modules','Misc']
-module_list_short = ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM2006', 'GM2013', 'GM2020','GM2030','Special Studies Modules']
+module_list = ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'GM2013', 'GM2020','Special Studies Modules','Misc']
+
 for module in module_list:
     tmp_cal = Calendar()
     tmp_cal.add('prodid', '-//My calendar product//example.com//')
@@ -100,7 +101,7 @@ for i in range(1, 14):
         if course.get('location') is not None:
             event.add('location', course['location'])
         cal.add_component(event)
-        if not any(item in course['summary'] for item in module_list_short):
+        if not any(item in course['summary'] for item in module_list):
             event = Event()
             event.add('summary', course['summary'])
             event.add('dtstart', course['dtstart'])
