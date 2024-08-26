@@ -4,6 +4,7 @@ import pandas as pd
 import openpyxl
 import pytz
 import os
+from datetime import timedelta
 
 # =========== Get dictionary with all of the events
 def get_ical(excel_file_name, worksheet):
@@ -34,11 +35,12 @@ def get_ical(excel_file_name, worksheet):
                         tzone = "Europe/Dublin" #"Europe/Paris" if date.month > 3 else "GMT"
 
                         # Parse strings to make it cleaner
-                        value = value.title()
+                        for module in ['Anatomy', 'Biochemistry','Pathology','Pharmacology','Physiology', 'Special Studies Modules']:
+                            value = value.replace(module.upper(),module)
                         for werd in ['Bhsc_', 'Bhsc ']: value = value.replace(werd,'BHSC-')
                         for werd in ['Wgb__','Wbg_', 'Wbg ']: value = value.replace(werd,'WGB-')
-                        value = value.replace('GM2001 Flame Lab Session','Anatomy\nFlame Lab Session')
-                        value = value.replace('GM2001','')
+                        value = value.replace('Gm2001 Flame Lab Session','Anatomy\nFlame Lab Session')
+                        value = value.replace('Gm2001','')
                         value_list = value.split()
                         
                         # Separate location
@@ -53,11 +55,13 @@ def get_ical(excel_file_name, worksheet):
                             tzinfo=pytz.timezone(tzone))
                         event['dtstart'] = dtstart
                         
-                        dtend = datetime(date.year, date.month, date.day,
-                            int(df.index.tolist()[i].split('-')[1].rstrip().split(':')[0]),0,0,
-                            tzinfo=pytz.timezone(tzone))
+                        if 'Flame Lab' in value: dtend = dtstart + timedelta(hours=2)
+                        else:
+                            dtend = datetime(date.year, date.month, date.day,
+                                int(df.index.tolist()[i].split('-')[1].rstrip().split(':')[0]),0,0,
+                                tzinfo=pytz.timezone(tzone))
                         event['dtend'] = dtend
-                        
+        
                         if len(location) == 1: event['location'] = location[0]
                         events.append(event)
     return(events)
